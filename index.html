@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<style>
+  :root{
+    --bg:#0c0d10; --panel:#141519; --panel-2:#1a1c22;
+    --line:#24262e; --text:#e7e9ee; --muted:#8a8f9c;
+    --accent:#6c8cff; --accent-soft:#6c8cff22; --done:#3ddc84; --danger:#ff6b6b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    min-height:100vh; padding:40px 20px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px; margin:0 auto}
+  /* Header */
+  header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:36px}
+  .greet{font-size:30px; font-weight:600; letter-spacing:-.02em}
+  .greet span{color:var(--muted); cursor:pointer; border-bottom:1px dashed transparent}
+  .greet span:hover{border-color:var(--muted)}
+  .clock{text-align:right}
+  .time{font-size:34px; font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:-.02em}
+  .date{font-size:14px; color:var(--muted); margin-top:2px}
+  /* Grid */
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px}
+  .card h2{font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center}
+  .add-btn{background:none; border:none; color:var(--accent); font-size:20px; cursor:pointer; line-height:1; padding:0 4px}
+  .add-btn:hover{opacity:.7}
+  /* Rows */
+  .row{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .txt{flex:1; font-size:15px}
+  .row .sub{font-size:12px; color:var(--muted)}
+  .check{width:22px; height:22px; border:2px solid var(--line); border-radius:7px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:.15s}
+  .check.on{background:var(--done); border-color:var(--done)}
+  .check.on::after{content:"✓"; color:#0c0d10; font-size:14px; font-weight:800}
+  .pill{font-size:12px; font-variant-numeric:tabular-nums; color:var(--muted); background:var(--panel-2); padding:3px 9px; border-radius:20px}
+  .pill.hot{color:var(--done)}
+  .del{background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; opacity:0; transition:.15s}
+  .row:hover .del{opacity:1}
+  .del:hover{color:var(--danger)}
+  .done .txt{text-decoration:line-through; color:var(--muted)}
+  .empty{color:var(--muted); font-size:14px; padding:8px 0}
+  /* Links */
+  .links{display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:10px}
+  .link{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:14px 8px; text-align:center; text-decoration:none; color:var(--text); font-size:13px; position:relative; transition:.15s; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .link:hover{border-color:var(--accent); background:var(--accent-soft)}
+  .link .x{position:absolute; top:3px; right:5px; color:var(--muted); font-size:13px; opacity:0}
+  .link:hover .x{opacity:1}
+  .link .x:hover{color:var(--danger)}
+  .fav{font-size:20px; display:block; margin-bottom:5px}
+  /* Inputs */
+  .input{width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:9px; padding:9px 11px; color:var(--text); font-size:14px; font-family:inherit; margin-top:4px}
+  .input:focus{outline:none; border-color:var(--accent)}
+  .form{margin-bottom:12px; display:none}
+  .form.open{display:block}
+  .form .fr{display:flex; gap:8px}
+  .form .fr .input{flex:1; margin-top:0}
+  .mini{font-size:11px; color:var(--muted); margin-top:6px}
+  footer{text-align:center; color:var(--muted); font-size:12px; margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="greet" id="greet">Hello, <span id="name">friend</span></div>
+    <div class="clock"><div class="time" id="time">--:--</div><div class="date" id="date"></div></div>
+  </header>
+
+  <div class="grid">
+    <!-- Habits -->
+    <div class="card">
+      <h2>Habits <button class="add-btn" data-add="habit">+</button></h2>
+      <div class="form" id="form-habit">
+        <div class="fr"><input class="input" id="in-habit" placeholder="New habit (e.g. Read 20 min)"><button class="add-btn" data-save="habit">↵</button></div>
+      </div>
+      <div id="list-habit"></div>
+    </div>
+
+    <!-- To-do -->
+    <div class="card">
+      <h2>To-do <button class="add-btn" data-add="todo">+</button></h2>
+      <div class="form" id="form-todo">
+        <div class="fr"><input class="input" id="in-todo" placeholder="New task"><button class="add-btn" data-save="todo">↵</button></div>
+      </div>
+      <div id="list-todo"></div>
+    </div>
+
+    <!-- Countdowns -->
+    <div class="card">
+      <h2>Countdowns <button class="add-btn" data-add="count">+</button></h2>
+      <div class="form" id="form-count">
+        <input class="input" id="in-count-name" placeholder="Event (e.g. Final exam)">
+        <div class="fr" style="margin-top:8px"><input class="input" id="in-count-date" type="date"><button class="add-btn" data-save="count">↵</button></div>
+      </div>
+      <div id="list-count"></div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="card">
+      <h2>Quick links <button class="add-btn" data-add="link">+</button></h2>
+      <div class="form" id="form-link">
+        <input class="input" id="in-link-name" placeholder="Label (e.g. Classroom)">
+        <div class="fr" style="margin-top:8px"><input class="input" id="in-link-url" placeholder="https://..."><button class="add-btn" data-save="link">↵</button></div>
+      </div>
+      <div class="links" id="list-link"></div>
+    </div>
+  </div>
+
+  <footer>Everything saves in this browser. Click your name to change it.</footer>
+</div>
+
+<script>
+const KEY='qol_dashboard_v1';
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}};
+let D=load();
+D.name=D.name||'friend';
+D.habits=D.habits||[];      // {name, dates:[]}
+D.todos=D.todos||[];        // {text, done}
+D.counts=D.counts||[];      // {name, date}
+D.links=D.links||[          // {name, url}
+  {name:'Classroom',url:'https://classroom.google.com'},
+  {name:'Drive',url:'https://drive.google.com'},
+  {name:'Gmail',url:'https://mail.google.com'},
+  {name:'GitHub',url:'https://github.com'}
+];
+
+/* ---- Clock & greeting ---- */
+function tick(){
+  const n=new Date();
+  document.getElementById('time').textContent=n.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('date').textContent=n.toLocaleDateString([], {weekday:'long',month:'long',day:'numeric'});
+  const h=n.getHours();
+  const g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  document.getElementById('greet').childNodes[0].textContent=g+', ';
+}
+setInterval(tick,1000);
+
+function renderName(){document.getElementById('name').textContent=D.name;}
+document.getElementById('name').onclick=()=>{
+  const v=prompt('Your name:',D.name); if(v!==null){D.name=v.trim()||'friend'; save(); renderName();}
+};
+
+/* ---- Habit streak ---- */
+function streak(dates){
+  const set=new Set(dates); let s=0; const d=new Date();
+  if(!set.has(todayStr())) d.setDate(d.getDate()-1); // allow streak if not yet done today
+  while(set.has(d.toISOString().slice(0,10))){s++; d.setDate(d.getDate()-1);}
+  return s;
+}
+function renderHabits(){
+  const el=document.getElementById('list-habit'); el.innerHTML='';
+  if(!D.habits.length){el.innerHTML='<div class="empty">No habits yet.</div>';return;}
+  D.habits.forEach((h,i)=>{
+    const done=h.dates.includes(todayStr()), s=streak(h.dates);
+    const r=document.createElement('div'); r.className='row';
+    r.innerHTML=`<div class="check ${done?'on':''}"></div>
+      <div class="txt">${esc(h.name)}</div>
+      <span class="pill ${s>2?'hot':''}">🔥 ${s}d</span>
+      <button class="del">✕</button>`;
+    r.querySelector('.check').onclick=()=>{
+      const t=todayStr();
+      h.dates=done?h.dates.filter(x=>x!==t):[...h.dates,t];
+      save(); renderHabits();
+    };
+    r.querySelector('.del').onclick=()=>{D.habits.splice(i,1);save();renderHabits();};
+    el.appendChild(r);
+  });
+}
+
+/* ---- To-do ---- */
+function renderTodos(){
+  const el=document.getElementById('list-todo'); el.innerHTML='';
+  if(!D.todos.length){el.innerHTML='<div class="empty">Nothing to do. Nice.</div>';return;}
+  D.todos.forEach((t,i)=>{
+    const r=document.createElement('div'); r.className='row'+(t.done?' done':'');
+    r.innerHTML=`<div class="check ${t.done?'on':''}"></div><div class="txt">${esc(t.text)}</div><button class="del">✕</button>`;
+    r.querySelector('.check').onclick=()=>{t.done=!t.done;save();renderTodos();};
+    r.querySelector('.del').onclick=()=>{D.todos.splice(i,1);save();renderTodos();};
+    el.appendChild(r);
+  });
+}
+
+/* ---- Countdowns ---- */
+function renderCounts(){
+  const el=document.getElementById('list-count'); el.innerHTML='';
+  const items=[...D.counts].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(!items.length){el.innerHTML='<div class="empty">No countdowns.</div>';return;}
+  items.forEach(c=>{
+    const i=D.counts.indexOf(c);
+    const days=Math.ceil((new Date(c.date+'T00:00')-new Date(todayStr()+'T00:00'))/864e5);
+    const label=days===0?'Today':days<0?`${-days}d ago`:`${days}d`;
+    const r=document.createElement('div'); r.className='row';
+    r.innerHTML=`<div class="txt">${esc(c.name)}<div class="sub">${c.date}</div></div>
+      <span class="pill ${days>=0&&days<7?'hot':''}">${label}</span>
+      <button class="del">✕</button>`;
+    r.querySelector('.del').onclick=()=>{D.counts.splice(i,1);save();renderCounts();};
+    el.appendChild(r);
+  });
+}
+
+/* ---- Links ---- */
+function renderLinks(){
+  const el=document.getElementById('list-link'); el.innerHTML='';
+  D.links.forEach((l,i)=>{
+    const a=document.createElement('a'); a.className='link'; a.href=l.url; a.target='_blank'; a.rel='noopener';
+    let host=''; try{host=new URL(l.url).hostname;}catch(e){}
+    a.innerHTML=`<span class="fav">${host?`<img src="https://www.google.com/s2/favicons?domain=${host}&sz=64" width="20" height="20" style="vertical-align:middle">`:'🔗'}</span>${esc(l.name)}<span class="x">✕</span>`;
+    a.querySelector('.x').onclick=(e)=>{e.preventDefault();D.links.splice(i,1);save();renderLinks();};
+    el.appendChild(a);
+  });
+}
+
+/* ---- Add forms ---- */
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{
+  const f=document.getElementById('form-'+b.dataset.add);
+  f.classList.toggle('open'); const inp=f.querySelector('.input'); if(f.classList.contains('open'))inp.focus();
+});
+function wireSave(type,fn){
+  const btn=document.querySelector(`[data-save="${type}"]`);
+  const form=document.getElementById('form-'+type);
+  btn.onclick=fn;
+  form.querySelectorAll('.input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')fn();}));
+}
+wireSave('habit',()=>{const v=document.getElementById('in-habit');if(v.value.trim()){D.habits.push({name:v.value.trim(),dates:[]});v.value='';save();renderHabits();}});
+wireSave('todo',()=>{const v=document.getElementById('in-todo');if(v.value.trim()){D.todos.push({text:v.value.trim(),done:false});v.value='';save();renderTodos();}});
+wireSave('count',()=>{const n=document.getElementById('in-count-name'),d=document.getElementById('in-count-date');if(n.value.trim()&&d.value){D.counts.push({name:n.value.trim(),date:d.value});n.value='';d.value='';save();renderCounts();}});
+wireSave('link',()=>{const n=document.getElementById('in-link-name'),u=document.getElementById('in-link-url');if(n.value.trim()&&u.value.trim()){let url=u.value.trim();if(!/^https?:\/\//.test(url))url='https://'+url;D.links.push({name:n.value.trim(),url});n.value='';u.value='';save();renderLinks();}});
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+tick(); renderName(); renderHabits(); renderTodos(); renderCounts(); renderLinks();
+</script>
+</body>
+</html>
